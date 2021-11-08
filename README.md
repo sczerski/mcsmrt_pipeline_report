@@ -14,6 +14,7 @@ m54257_67890_202111/2_B01/demux_no_peek/outputs/
 It may be possible to edit file names and directory structure as per your own needs, but this is the convention we use.
 
 Required Input Files*:
+
 CCS Sub-report:
 1) ccs_passes.tsv --> 
 a tsv file with recorded number of passess associated with each read (required for MCSMRT pipeline, script can be found on MCSMRT repository)
