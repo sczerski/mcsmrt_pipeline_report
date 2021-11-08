@@ -1,4 +1,4 @@
-# mcsmrt_pipeline_report
+# microbiome_analysis_pipeline_report
 Generates a report following successful completing Circular Consensus Sequencing and Demultiplexing (Microbiome Analysis Pipeline) using Pacbio sequencing data.
 
 Please note the standardardized file-naming convention that must be used in order to run this program. Organization is as follows:
