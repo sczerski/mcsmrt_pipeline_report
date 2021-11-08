@@ -8,27 +8,36 @@ import glob
 import subprocess
 import sys
 import numpy as np
+import PrettyTable from prettytable
+import wcwidth
+
+### Please ignore these comments (these were system specific workarounds, but leaving here in case any errors arise)
 
 # Add my modules dir to the system path so python finds it
 # I don't like this, but I don't have permissions to download these modules where pythonpath is set to search for modules within the cluster
-sys.path.append('/home/sam/bin/python_modules/prettytable/src/prettytable')
-sys.path.append('/home/sam/bin/python_modules/wcwidth/wcwidth')
+#sys.path.append('/home/sam/bin/python_modules/prettytable/src/prettytable')
+#sys.path.append('/home/sam/bin/python_modules/wcwidth/wcwidth')
 
 # import the modules I need -- NOTE: these must be in this order due to reference to parent/local directories in wcwdith script. I edited these to just refer to the modules without relation to one another
-import table_wide
-import table_zero
-import unicode_versions
-from prettytable import PrettyTable
-import wcwidth
+# if this present problems, simply import prettytable and wcwidth above as you normally would
+#import table_wide
+#import table_zero
+#import unicode_versions
+#from prettytable import PrettyTable
+#import wcwidth
 
 # MODULE ERROR - PRINT PATH WHERE MODULES ARE LOOKED FOR
 #print("sys.path:\n" + "\n".join(sys.path))
 #exit()
 
-# Author: Sam Czerski
-# Generation of Report following Microbiome Analysis Pipeline (CCS & DEMUX)
-# Must be run from the run_id subdirectory in the SCRATCH drive with conventionally named subfolders (eg. 1_A01, 2_B01, 3_C01/ccs/outputs/, 4_D01/demux_no_peek/outputs/)
-# Last updated: 11/08/2021
+###
+
+'''
+Author: Sam Czerski
+Generation of Report following Microbiome Analysis Pipeline (CCS & DEMUX)
+Must be run from the run_id subdirectory in the SCRATCH drive with conventionally named subfolders (eg. 1_A01, 2_B01, 3_C01/ccs/outputs/, 4_D01/demux_no_peek/outputs/)
+Last updated: 11/08/2021
+'''
 
 def check_smrt_cells_and_ccs_files():
     print("Confirming Existence of CCS Files...")
