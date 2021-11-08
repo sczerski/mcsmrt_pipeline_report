@@ -1,11 +1,11 @@
 # microbiome_analysis_pipeline_report
 Generates a report following successful completing Circular Consensus Sequencing, Demultiplexing (Microbiome Analysis Pipeline), and preparation for the MCSMRT Microbiome Classifier Pipeline using Pacbio sequencing data.
 
-Please note the standardardized file-naming convention that must be used in order to run this program. Organization is as follows:
+Please note the standardardized file-naming convention that must be used in order to run this program. Organization is as follows: \n
 project_dir/SMRTcell_subdir/CCS_or_DEMUX_subdir/outputs
-example:
+example: \n
 m54257_12345_20211108/1_A01/ccs/outputs/
-another example:
+another example: \n
 m54257_67890_202111/2_B01/demux_no_peek/outputs/
 
 It may be possible to edit file names and directory structure as per your own needs, but this is the convention we use.
