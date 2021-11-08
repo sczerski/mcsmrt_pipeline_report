@@ -31,9 +31,13 @@ a csv file output from pbcromwell pb_demux_ccs
 
 Output:
 1) ccs_demux_report_output/ (directory)
+
 a) ccs_demux_summary_report.txt
+
 b) SMRTcell_avg_read_length_hist.png
+
 c) SMRTcell_ccs_passes_hist.png
+
 d) SMRTcell_polymerase_reads_hist.png
 where SMRTcell represents a prefix of the cell-associated data
 
