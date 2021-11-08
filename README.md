@@ -1,5 +1,5 @@
 # microbiome_analysis_pipeline_report
-Generates a report following successful completing Circular Consensus Sequencing and Demultiplexing (Microbiome Analysis Pipeline) using Pacbio sequencing data.
+Generates a report following successful completing Circular Consensus Sequencing, Demultiplexing (Microbiome Analysis Pipeline), and preparation for the MCSMRT Microbiome Classifier Pipeline using Pacbio sequencing data.
 
 Please note the standardardized file-naming convention that must be used in order to run this program. Organization is as follows:
 project_dir/SMRTcell_subdir/CCS_or_DEMUX_subdir/outputs
@@ -13,7 +13,7 @@ It may be possible to edit file names and directory structure as per your own ne
 Required Input Files:
 CCS Sub-report:
 1) ccs_passes.tsv 
-a tsv file with recorded number of passess associated with each read
+a tsv file with recorded number of passess associated with each read (required for MCSMRT pipeline)
 2) ccs_report.zip OR ccs_statistics.csv
 a csv file output from pbcromwell pb_ccs 
 
