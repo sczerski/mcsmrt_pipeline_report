@@ -13,7 +13,7 @@ It may be possible to edit file names and directory structure as per your own ne
 Required Input Files:
 CCS Sub-report:
 1) ccs_passes.tsv 
-a tsv file with recorded number of passess associated with each read (required for MCSMRT pipeline)
+a tsv file with recorded number of passess associated with each read (required for MCSMRT pipeline, script can be found on MCSMRT repository)
 2) ccs_report.zip OR ccs_statistics.csv
 a csv file output from pbcromwell pb_ccs 
 
