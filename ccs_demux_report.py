@@ -10,6 +10,7 @@ import sys
 import numpy as np
 import PrettyTable from prettytable
 import wcwidth
+from datetime import datetime
 
 ### Please ignore these comments (these were system specific workarounds, but leaving here in case any errors arise)
 
@@ -36,7 +37,7 @@ import wcwidth
 Author: Sam Czerski
 Generation of Report following Microbiome Analysis Pipeline (CCS & DEMUX)
 Must be run from the run_id subdirectory in the SCRATCH drive with conventionally named subfolders (eg. 1_A01, 2_B01, 3_C01/ccs/outputs/, 4_D01/demux_no_peek/outputs/)
-Last updated: 11/08/2021
+Last updated: 11/09/2021
 '''
 
 def check_smrt_cells_and_ccs_files():
@@ -96,17 +97,24 @@ def get_ccs_summary(smrt_cells):
 
     # create new output statistics report file
     with open("ccs_demux_summary_report.txt", "w") as fout:
-        # want to report stats for all cells
+        # write date and time to the top of the output file
+        now = datetime.now()
+        # reformat
+        dt_string = now.strftime("%Y_%m_%d %H:%M:%S")
+        fout.write(str("Date and Time: "))
+        fout.write(str(dt_string))
+        # Begin Report - write title
+        fout.write(str('\nCCS Sub-Report\n'))
+        # report stats for all cells
         for cell in smrt_cells:
-            fout.write(str('CCS Sub-Report\n'))
-            fout.write(str(f'SMRT CELL: {cell}\n'))
+            fout.write(str(f'\nSMRT CELL: {cell}\n'))
             # initializing variables
             read_length = []
             count = 0
             read_sum = 0
             pattern = re.compile(r',(\d+),')
 
-            # cd into directory with existing CCS files
+            # change into directory with existing CCS files
             os.chdir(f'{cell}/ccs/outputs/')
             # obtain/generate summary data and statistics
             with open("ccs_statistics.csv") as f:
@@ -166,7 +174,7 @@ def get_ccs_summary(smrt_cells):
 
                 # Summary Statistics
 
-                fout.write("Average Number of CCS Passes:\n")
+                fout.write("\nAverage Number of CCS Passes:\n")
                 avg_num_ccs_passes = passes_sum / pcount
                 fout.write(str(round(avg_num_ccs_passes)))
                 fout.write("\nHistogram of CCS Passes Saved to png file\n")
@@ -222,10 +230,11 @@ def check_demux_files(smrt_cells):
 
 def get_demux_summary(smrt_cells):
     #Reminder: Now we are back in the run_id directory with smrt cells as subdirectories in this folder.
-
+    
     # Adding to the summary report file created above
     with open("ccs_demux_summary_report.txt", "a") as fout:
         # want to report stats for all cells
+        fout.write(str('\nDEMUX Sub-Report\n'))
         for cell in smrt_cells:
             fout.write(str(f'\nSMRT CELL: {cell}\n'))
 
@@ -241,7 +250,6 @@ def get_demux_summary(smrt_cells):
                 next(f)
                 # get list of expected barcodes and write to output file
                 expected_barcodes = [line.split(",")[0] for line in f]
-                fout.write("\nDEMUX Sub-Report\n")
                 fout.write("\nList of Input Barcodes:\n")
                 for barcode in expected_barcodes:
                     fout.write(str(f'{barcode}\n'))
@@ -458,5 +466,3 @@ def main():
 
 if __name__=="__main__":
 	main()
-
-
