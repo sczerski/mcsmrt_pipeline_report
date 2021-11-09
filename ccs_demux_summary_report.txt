@@ -1,0 +1,194 @@
+Date and Time: 2021_11_09 11:40:09
+CCS Sub-Report
+
+SMRT CELL: 1_A01
+Total number of reads:
+364398
+Min. Read Length:
+256
+Max. Read Length:
+12944
+Average Read Length:
+1686
+Histogram of Average Read Length Saved to png file
+
+Average Number of CCS Passes:
+33
+Histogram of CCS Passes Saved to png file
+
+SMRT CELL: 2_B01
+Total number of reads:
+364398
+Min. Read Length:
+256
+Max. Read Length:
+12944
+Average Read Length:
+1686
+Histogram of Average Read Length Saved to png file
+
+Average Number of CCS Passes:
+28
+Histogram of CCS Passes Saved to png file
+
+DEMUX Sub-Report
+
+SMRT CELL: 1_A01
+
+List of Input Barcodes:
+lbc62--lbc62
+lbc63--lbc63
+lbc64--lbc64
+lbc90--lbc90
+lbc91--lbc91
+lbc92--lbc92
+lbc93--lbc93
+lbc66--lbc66
+lbc68--lbc68
+lbc69--lbc69
+lbc70--lbc70
+lbc56--lbc56
+lbc72--lbc72
+lbc37--lbc37
+lbc38--lbc38
+lbc39--lbc39
+lbc40--lbc40
+lbc34--lbc34
+
+List of Demultiplexed Barcodes:
+lbc34--lbc34
+lbc37--lbc37
+lbc38--lbc38
+lbc39--lbc39
+lbc40--lbc40
+lbc56--lbc56
+lbc62--lbc62
+lbc63--lbc63
+lbc64--lbc64
+lbc66--lbc66
+lbc68--lbc68
+lbc69--lbc69
+lbc70--lbc70
+lbc72--lbc72
+lbc90--lbc90
+lbc91--lbc91
+lbc92--lbc92
+lbc93--lbc93
+Not Barcoded
+
+List of Expected Barcodes Not Found:
+**All Expected Barcodes Found**
+
+Total Number of Polymerase Reads:
+283829
+Average Number of Polymerase Reads:
+14938
+Histogram of Average Number of Polymerase Reads Found Saved to png file
+
+Min Barcode Quality Score:
+0
+Max Barcode Quality Score:
+91
+Average Barcode Quality Score:
+81
++--------------+---------------+------------------+-----------------+
+|   Barcode    |  Sample_Name  | Polymerase_Reads | Avg_Read_Length |
++--------------+---------------+------------------+-----------------+
+| lbc34--lbc34 |   nasal_1393  |      10440       |      14938      |
+| lbc37--lbc37 |   nasal_1379  |      14603       |      14938      |
+| lbc38--lbc38 |   nasal_1383  |      16300       |      14938      |
+| lbc39--lbc39 |   nasal_1389  |      24771       |      14938      |
+| lbc40--lbc40 |   nasal_1392  |      21356       |      14938      |
+| lbc56--lbc56 | neg_control_1 |      14141       |      14938      |
+| lbc62--lbc62 | nasal_BIT_124 |      11968       |      14938      |
+| lbc63--lbc63 | nasal_BIT_125 |      17419       |      14938      |
+| lbc64--lbc64 | nasal_BIT_126 |      13394       |      14938      |
+| lbc66--lbc66 | nasal_BIT_131 |       7804       |      14938      |
+| lbc68--lbc68 | nasal_BIT_132 |      23300       |      14938      |
+| lbc69--lbc69 | nasal_BIT_133 |      19490       |      14938      |
+| lbc70--lbc70 | nasal_BIT_134 |      17016       |      14938      |
+| lbc72--lbc72 |  nasal_1207B  |      13678       |      14938      |
+| lbc90--lbc90 | nasal_BIT_127 |       6775       |      14938      |
+| lbc91--lbc91 | nasal_BIT_128 |       8549       |      14938      |
+| lbc92--lbc92 | nasal_BIT_129 |      11041       |      14938      |
+| lbc93--lbc93 | nasal_BIT_130 |       7963       |      14938      |
+| Not Barcoded |    No Name    |      23821       |      14938      |
++--------------+---------------+------------------+-----------------+
+SMRT CELL: 2_B01
+
+List of Input Barcodes:
+lbc35--lbc35
+lbc1--lbc1
+lbc2--lbc2
+lbc3--lbc3
+lbc4--lbc4
+lbc5--lbc5
+lbc6--lbc6
+lbc7--lbc7
+lbc8--lbc8
+lbc10--lbc10
+lbc11--lbc11
+lbc12--lbc12
+lbc13--lbc13
+lbc14--lbc14
+lbc15--lbc15
+lbc16--lbc16
+lbc24--lbc24
+
+List of Demultiplexed Barcodes:
+lbc1--lbc1
+lbc10--lbc10
+lbc11--lbc11
+lbc12--lbc12
+lbc13--lbc13
+lbc14--lbc14
+lbc15--lbc15
+lbc16--lbc16
+lbc2--lbc2
+lbc24--lbc24
+lbc3--lbc3
+lbc35--lbc35
+lbc4--lbc4
+lbc5--lbc5
+lbc6--lbc6
+lbc7--lbc7
+lbc8--lbc8
+Not Barcoded
+
+List of Expected Barcodes Not Found:
+**All Expected Barcodes Found**
+
+Total Number of Polymerase Reads:
+291941
+Average Number of Polymerase Reads:
+16218
+Histogram of Average Number of Polymerase Reads Found Saved to png file
+
+Min Barcode Quality Score:
+0
+Max Barcode Quality Score:
+91
+Average Barcode Quality Score:
+82
++--------------+---------------+------------------+-----------------+
+|   Barcode    |  Sample_Name  | Polymerase_Reads | Avg_Read_Length |
++--------------+---------------+------------------+-----------------+
+|  lbc1--lbc1  |   nasal_1395  |      19206       |      16218      |
+| lbc10--lbc10 |   nasal_1405  |      16536       |      16218      |
+| lbc11--lbc11 |   nasal_1406  |      13025       |      16218      |
+| lbc12--lbc12 |   nasal_1407  |      15137       |      16218      |
+| lbc13--lbc13 |   nasal_1408  |      10064       |      16218      |
+| lbc14--lbc14 |   nasal_1409  |      14005       |      16218      |
+| lbc15--lbc15 |   nasal_6000  |      16702       |      16218      |
+| lbc16--lbc16 |   nasal_6001  |      15353       |      16218      |
+|  lbc2--lbc2  |   nasal_1396  |      15456       |      16218      |
+| lbc24--lbc24 | neg_control_2 |      16670       |      16218      |
+|  lbc3--lbc3  |   nasal_1397  |      12350       |      16218      |
+| lbc35--lbc35 |   nasal_1394  |      12128       |      16218      |
+|  lbc4--lbc4  |   nasal_1398  |      11560       |      16218      |
+|  lbc5--lbc5  |   nasal_1399  |      17513       |      16218      |
+|  lbc6--lbc6  |   nasal_1400  |      30386       |      16218      |
+|  lbc7--lbc7  |   nasal_1402  |      19286       |      16218      |
+|  lbc8--lbc8  |   nasal_1403  |      18792       |      16218      |
+| Not Barcoded |    No Name    |      17772       |      16218      |
++--------------+---------------+------------------+-----------------+
