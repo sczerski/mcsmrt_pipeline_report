@@ -42,4 +42,4 @@ d) SMRTcell_polymerase_reads_hist.png
 
 where SMRTcell represents a prefix of the cell-associated data
 
-ccs_demux_summary_report.txt contains useful information/reports and plots of statistics including of the number of reads, avg read length, avg number of ccs passes, polymerase reads, lists of input barcodes, demultiplexed barcodes, barcodes not found during demultiplexing, and relational tables of bio sample id, associated barcode, polymerase reads, and avg polymerase reads associated with each SMRTcell.
+ccs_demux_summary_report.txt contains useful information/reports and plots of statistics. Please see example output summary report for more information.
