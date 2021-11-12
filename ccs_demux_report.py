@@ -11,6 +11,9 @@ import numpy as np
 import PrettyTable from prettytable
 import wcwidth
 from datetime import datetime
+import exml.etree.ElementTree as et
+import json
+import xmltodict
 
 ### Please ignore these comments (these were system specific workarounds, but leaving here in case any errors arise)
 
@@ -18,6 +21,7 @@ from datetime import datetime
 # I don't like this, but I don't have permissions to download these modules where pythonpath is set to search for modules within the cluster
 #sys.path.append('/home/sam/bin/python_modules/prettytable/src/prettytable')
 #sys.path.append('/home/sam/bin/python_modules/wcwidth/wcwidth')
+#sys.path.append('/home/sam/bin/python_modules/xmltodict')
 
 # import the modules I need -- NOTE: these must be in this order due to reference to parent/local directories in wcwdith script. I edited these to just refer to the modules without relation to one another
 # if this present problems, simply import prettytable and wcwidth above as you normally would
@@ -26,6 +30,7 @@ from datetime import datetime
 #import unicode_versions
 #from prettytable import PrettyTable
 #import wcwidth
+#import xmltodict
 
 # MODULE ERROR - PRINT PATH WHERE MODULES ARE LOOKED FOR
 #print("sys.path:\n" + "\n".join(sys.path))
@@ -37,17 +42,17 @@ from datetime import datetime
 Author: Sam Czerski
 Generation of Report following Microbiome Analysis Pipeline (CCS & DEMUX)
 Must be run from the run_id subdirectory in the SCRATCH drive with conventionally named subfolders (eg. 1_A01, 2_B01, 3_C01/ccs/outputs/, 4_D01/demux_no_peek/outputs/)
-Last updated: 11/09/2021
+Last updated: 11/12/2021
 '''
 
 def check_smrt_cells_and_ccs_files():
     print("Confirming Existence of CCS Files...")
 
-    #Creating list of possible smrt cell directories to search for
+    # List of possible smrt cell directories to search for
     smrt_cells = ["1_A01", "2_B01", "3_C01", "4_D01"]
     smrt_cells_in_working_dir = []
 
-    #First, see what smrt cells are present and add them to a new list to work from
+    # What smrt cells are present and add them to a new list to work from
     for cell in smrt_cells:
         is_dir_here = os.path.exists("%s" % cell)
         if is_dir_here == True:
@@ -56,24 +61,24 @@ def check_smrt_cells_and_ccs_files():
         else:
             print("%s not found" % cell)
 
-    #Now, we have a list of the smrt cells within the working directory.
-    #Next, we will confirm the existence of files with the CCS data we are interested in.
+    # Now have a list of the smrt cells within the working directory.
+    # Confirm the existence of files with the CCS data we are interested in.
 
     for present_cell in smrt_cells_in_working_dir:
         os.chdir(f'{present_cell}/ccs/outputs/')
 
-    #if ccs.report.zip must be unzipped, try unzipping it.
+    # if ccs.report.zip must be unzipped, try unzipping it.
         try:
             with zipfile.ZipFile("ccs.report.csv.zip") as z:
                 z.extractall()
                 print("\nExtracted Output CCS Statistics File Successfully.")
-        #if ccs.report.csv.zip is already unzipped, try to open ccs_statistics.csv file (unzipped from report.csv.zip)
+        # if ccs.report.csv.zip is already unzipped, try to open ccs_statistics.csv file (unzipped from report.csv.zip)
         except:
             try:
                 with open("ccs_statistics.csv"):
                     print("Located CCS Summary Output File Successfully.")
             except:
-                #if this file is not found, stop.
+                # if this file is not found, stop.
                 raise FileNotFoundError("ccs.report.csv.zip not found.")
 
         finally:
@@ -103,11 +108,14 @@ def get_ccs_summary(smrt_cells):
         dt_string = now.strftime("%Y_%m_%d %H:%M:%S")
         fout.write(str("Date and Time: "))
         fout.write(str(dt_string))
+        fout.write(str("\n"))
+	
         # Begin Report - write title
         fout.write(str('\nCCS Sub-Report\n'))
         # report stats for all cells
         for cell in smrt_cells:
             fout.write(str(f'\nSMRT CELL: {cell}\n'))
+	
             # initializing variables
             read_length = []
             count = 0
@@ -116,6 +124,7 @@ def get_ccs_summary(smrt_cells):
 
             # change into directory with existing CCS files
             os.chdir(f'{cell}/ccs/outputs/')
+		
             # obtain/generate summary data and statistics
             with open("ccs_statistics.csv") as f:
                 # skip the header line
@@ -131,26 +140,28 @@ def get_ccs_summary(smrt_cells):
                     read_sum += num
 
                 # Summary Statistics
-
-                fout.write("Total number of reads:\n")
-                fout.write(str(count))
-                fout.write("\nMin. Read Length:\n")
                 min_read_length = min(read_length)
-                fout.write(str(min_read_length))
                 max_read_length = max(read_length)
-                fout.write("\nMax. Read Length:\n")
-                fout.write(str(max_read_length))
-                avg_read_length = read_sum / count
-                fout.write("\nAverage Read Length:\n")
-                fout.write(str(round(avg_read_length)))
+                avg_read_length = round(read_sum / count)
+                
                 fout.write("\nHistogram of Average Read Length Saved to png file\n")
                 plt.hist(read_length)
-                plt.xlim([0,max_read_length])
+                plt.xlim([0,6000])
+                X_ticks = np.arange(0,6000,500)
+                plt.xticks(X_ticks)
                 plt.title("Reads Lengths")
                 plt.xlabel("Lengths of Reads")
                 plt.ylabel("Frequency")
                 plt.savefig(f'{cell}_avg_read_length_hist.png')
                 plt.clf()
+                
+                # Make table of Summary Stats
+                summary_stats_headers = ["Avg. Read Length", "Min. Read Length", "Max. Read Length", "Total Num. of Reads"]
+                summary_stats_table = PrettyTable(summary_stats_headers)
+                summary_stats_table.add_row([avg_read_length, min_read_length, max_read_length, count])
+		
+                # Write table to output file
+                fout.write(str(summary_stats_table))
 
             # CCS Passes Stats
 
@@ -174,13 +185,15 @@ def get_ccs_summary(smrt_cells):
 
                 # Summary Statistics
 
-                fout.write("\nAverage Number of CCS Passes:\n")
-                avg_num_ccs_passes = passes_sum / pcount
-                fout.write(str(round(avg_num_ccs_passes)))
+                avg_num_ccs_passes = round(passes_sum / pcount)
+                min_num_ccs_passes = min(num_passes)
+                max_num_ccs_passes = max(num_passes)
+		
+		# Plot
                 fout.write("\nHistogram of CCS Passes Saved to png file\n")
                 plt.hist(num_passes)
-                plt.xlim([0,120])
-                X_ticks = np.arange(0,120,10)
+                plt.xlim([0,100])
+                X_ticks = np.arange(0,100,5)
                 plt.xticks(X_ticks)
                 plt.xlabel("Number of CCS Passes")
                 plt.ylabel("Frequency")
@@ -188,16 +201,21 @@ def get_ccs_summary(smrt_cells):
                 plt.savefig(f'{cell}_ccs_passes_hist.png')
                 plt.clf()
 
-                # Create a file of histogram of the average ccs passes associated with each read
-                # Use bash script I've already made, and then remove it for the sake of not outputting too much. 
-                # Probably going to remove this because it is not really necessary.
-                #os.system("ln -s /data/shared/homes/sam/apps/report_generation/make_ccs_passes_histogram.sh")
-                #os.system("./make_ccs_passes_histogram.sh")
-                #os.system("rm make_ccs_passes_histogram.sh") #Maybe move this/ rename it, otherwise just list the location of the file.
+                # Make CCS Passes Table
+                passes_headers = ["Avg. CCS Passes", "Min. CCS Passes", "Max. CCS Passes"]
+                passes_table = PrettyTable(passes_headers)
+                passes_table.add_row([avg_num_ccs_passes, min_num_ccs_passes, max_num_ccs_passes])
+
+                # Write table to output file
+                fout.write(str(passes_table))
+                fout.write(str('\n'))
+
+            # Return to beginning directory
 
             os.chdir("..")
             os.chdir("..")
             os.chdir("..")
+		
 #again, i dont really like this, but look later for a better/more secure way. this could easily get messed up if the file convention is wrong. I could save a pwd command in a variable to get the run directory and use that.... I should do that.
 
     print("\nCCS Sub-Report Complete.\n")
@@ -234,6 +252,7 @@ def get_demux_summary(smrt_cells):
     # Adding to the summary report file created above
     with open("ccs_demux_summary_report.txt", "a") as fout:
         # want to report stats for all cells
+        fout.write(str('\n'))
         fout.write(str('\nDEMUX Sub-Report\n'))
         for cell in smrt_cells:
             fout.write(str(f'\nSMRT CELL: {cell}\n'))
@@ -310,27 +329,23 @@ def get_demux_summary(smrt_cells):
                     total_pr += int(num)
                     count += 1
 
-                fout.write("\nTotal Number of Polymerase Reads:\n")
-                fout.write(str(total_pr))
-
                 # compute average
                 polymerase_reads_avg = int(total_pr / count)
-                fout.write("\nAverage Number of Polymerase Reads:\n") #Confirm: Number or Length??
-                fout.write(str(round(polymerase_reads_avg)))
-                # compute min and max for axes
+                # compute min and max
                 max_polymerase_reads = max(polymerase_reads)
                 min_polymerase_reads = min(polymerase_reads)
 
-                # Make histogram of Polymerase Reads
-                fout.write("\nHistogram of Average Number of Polymerase Reads Found Saved to png file\n")
+                # Make bar chart
+                fout.write("\nBar Chart of Polymerase Reads Saved to png file\n")
                 plt.clf()
-                plt.hist(polymerase_reads)
-                plt.xticks(rotation=45)
-                plt.xlabel("Polymerase Reads")
-                plt.ylim([0,5])
-                plt.ylabel("Frequency")
-                plt.title("Histogram of Polymerase Reads")
-                plt.savefig(f'{cell}_polymerase_reads_hist.png')
+                polymerase_reads_f = [float(i) for i in polymerase_reads]
+                plt.bar(np.arange(len(demultiplexed_barcodes)), polymerase_reads_f, align='center', alpha=0.5)
+                plt.xticks(np.arange(len(demultiplexed_barcodes)), demultiplexed_barcodes, rotation=90)
+                plt.xlabel("Barcodes")
+                plt.ylabel("Polymerase Reads")
+                plt.title("Bar Chart of Polymerase Reads")
+                plt.tight_layout()
+                plt.savefig(f'{cell}_polymerase_reads_bar_chart.png')
                 plt.clf()
 
                 # Mean Barcode Quality
@@ -368,6 +383,7 @@ def get_demux_summary(smrt_cells):
                 fout.write("\nAverage Barcode Quality Score:\n")
                 fout.write(str(round(avg_barcode_quality_score)))
                 fout.write("\n")
+                fout.write("\n")
 
 
                 # Create a table structure for organizing output data
@@ -395,15 +411,15 @@ def get_demux_summary(smrt_cells):
                     # initiate table with headers
                     demux_table = PrettyTable(table_headers)
 
-                    # assign the data to a line in the new table
+                    # populate table
                     for data in demux_data:
                         demux_table.add_row(data)
                         
-                    # Populate table
+                    # write to output file
                     fout.write(str(demux_table))
-
+                    fout.write(str('\n'))
                     # Print this as well so you can get a quick understanding
-                    print(str(demux_table))
+                    #print(str(demux_table))
 
                     
                 # Return to original run directory for accessing other cells
@@ -435,19 +451,98 @@ def consolidate_files(smrt_cells):
         os.chdir("..")
         os.chdir("demux_no_peek/outputs/")
 
-        os.rename(f'{cell}_polymerase_reads_hist.png', f'{target_dir}/{cell}_polymerase_reads_hist.png')
+        os.rename(f'{cell}_polymerase_reads_bar_chart.png', f'{target_dir}/{cell}_polymerase_reads_bar_chart.png')
 
-        # Go back to run directory and move report file to output directory
+        # Go back to run directory
         os.chdir("..")
         os.chdir("..")
         os.chdir("..")
 
-    # Finally, move the report txt file to the output directory
+        # Move the json files to output dir
+        os.rename(f'{cell}_data.json', f'{target_dir}/{cell}_data.json')
+
+    # Finally, move the summary text file to the output dir
     os.rename("ccs_demux_summary_report.txt", "%s/ccs_demux_summary_report.txt" % target_dir)
+
+    
+def get_productivity_values(smrt_cells):
+    print("\nObtaining Productivity Values...\n")
+    for cell in smrt_cells:
+        # use pwd to obtain the run id, which should be the directory above our current directory
+        run_dir = subprocess.run(["pwd"], stdout=subprocess.PIPE) .stdout.decode('utf-8')
+	
+        # because run_ids have the same length and there is a naming convention, I can use str splicing to take the last X characters to make up the run ID.
+        run_id = run_dir[-23:]
+        run_id = run_id.rstrip()
+	
+        # now I need to get tge path to the sts.xml file associated with the run post sequencing
+        pacbio_sequel_data_dir = "/data/pacbio/sequel/userdata/data_root/"
+	
+        # full path to file str cat
+        data_dir = pacbio_sequel_data_dir + run_id + "/" + cell
+	
+        # create a softlink to the file so we can easily get back to the current
+        os.system(f'ln -s {data_dir}/*.sts.xml')
+	
+        # assign file to variable - glob outputs list
+        target_file = glob.glob('*.sts.xml')
+        
+        # XML Parsing is proving to be complicated... I think the sts.xml file must be compressed or not in standard xml format, so parsing/iterating through the file returns nothing. Going to try to convert to json file and pull info that way.
+
+        # Convert XML to json file
+        json_file = convert_xml_to_json(target_file[0])
+	
+        # Extract Data
+        with open(json_file) as j_file:
+            data = json.load(j_file)
+            # Productivity Values
+            p_zero = data['PipeStats']['ProdDist']['ns:BinCounts']['ns:BinCount'][0]
+            p_one = data['PipeStats']['ProdDist']['ns:BinCounts']['ns:BinCount'][1]
+            p_two = data['PipeStats']['ProdDist']['ns:BinCounts']['ns:BinCount'][2]
+        
+            # Make a table in output summary report file
+            p_zero_header = u'P\u2080'
+            p_one_header = u'P\u2081'
+            p_two_header = u'P\u2082'
+
+            p_table_headers = [p_zero_header, p_one_header, p_two_header]
+
+            p_table = PrettyTable(p_table_headers)
+            p_table.add_row([p_zero, p_one, p_two])
+            
+            with open("ccs_demux_summary_report.txt", "a") as fout:
+                # Write to output file
+                fout.write(str("\n"))
+                fout.write(str(f'\nProductivity Values {cell}:\n'))
+                fout.write(str(p_table))
+                
+                # remove the soft link of the .sts.xml file so we can repeat with next cell(s)
+                os.system(f'rm *.sts.xml')
+		
+        # rename file for clarity
+        os.rename('data.json', f'{cell}_data.json')
+                    
+
+def convert_xml_to_json(xml_file):
+    # read xml file and convert to dict object
+    with open(xml_file, 'r') as xml_file:
+        data_dict = xmltodict.parse(xml_file.read())
+        xml_file.close()
+        
+        # convert to json object
+        json_data = json.dumps(data_dict, indent=2)
+
+        # write json data to output json file
+        with open("data.json", "w") as json_file:
+            json_file.write(json_data)
+            json_file.close()
+
+        return "data.json"
+    
 
 def main():
     #First, Make Output Directory
-    print("Creating Output Directory...Done.\n")
+    print("Creating Output Directory...\n")
     os.system("mkdir ccs_demux_report_output")
     #Second, Make Sure CCS Files Exist
     print("Generating CCS Report Summary...\n")
@@ -459,10 +554,13 @@ def main():
     check_demux_files(smrt_cells)
     #Fifth, Make DEMUX Sub-Report
     get_demux_summary(smrt_cells)
-    #Sixth, consolidate files to output dir
+    #Sixth, obtain productivity values 
+    get_productivity_values(smrt_cells)
+    #Seventh, consolidate files to output dir
     consolidate_files(smrt_cells)
-    print("\nCCS_DEMUX_Report Successfully Completed\n")
-    print("Please See ccs_demux_report_output/ For All Output Files.")
+    # Fin
+    print("\nCCS_DEMUX_Report Successfully Completed.\n")
+    print("Please See ccs_demux_report_output/ For All Output Files.\n")
 
 if __name__=="__main__":
 	main()
