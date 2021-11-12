@@ -1,35 +1,37 @@
-Date and Time: 2021_11_09 11:40:09
+Date and Time: 2021_11_12 15:35:47
+
 CCS Sub-Report
 
 SMRT CELL: 1_A01
-Total number of reads:
-364398
-Min. Read Length:
-256
-Max. Read Length:
-12944
-Average Read Length:
-1686
-Histogram of Average Read Length Saved to png file
 
-Average Number of CCS Passes:
-33
+Histogram of Average Read Length Saved to png file
++------------------+------------------+------------------+---------------------+
+| Avg. Read Length | Min. Read Length | Max. Read Length | Total Num. of Reads |
++------------------+------------------+------------------+---------------------+
+|       1686       |       256        |      12944       |        364398       |
++------------------+------------------+------------------+---------------------+
 Histogram of CCS Passes Saved to png file
++-----------------+-----------------+-----------------+
+| Avg. CCS Passes | Min. CCS Passes | Max. CCS Passes |
++-----------------+-----------------+-----------------+
+|        33       |        3        |       280       |
++-----------------+-----------------+-----------------+
 
 SMRT CELL: 2_B01
-Total number of reads:
-364398
-Min. Read Length:
-256
-Max. Read Length:
-12944
-Average Read Length:
-1686
-Histogram of Average Read Length Saved to png file
 
-Average Number of CCS Passes:
-28
+Histogram of Average Read Length Saved to png file
++------------------+------------------+------------------+---------------------+
+| Avg. Read Length | Min. Read Length | Max. Read Length | Total Num. of Reads |
++------------------+------------------+------------------+---------------------+
+|       1686       |       256        |      12944       |        364398       |
++------------------+------------------+------------------+---------------------+
 Histogram of CCS Passes Saved to png file
++-----------------+-----------------+-----------------+
+| Avg. CCS Passes | Min. CCS Passes | Max. CCS Passes |
++-----------------+-----------------+-----------------+
+|        28       |        3        |       262       |
++-----------------+-----------------+-----------------+
+
 
 DEMUX Sub-Report
 
@@ -79,11 +81,7 @@ Not Barcoded
 List of Expected Barcodes Not Found:
 **All Expected Barcodes Found**
 
-Total Number of Polymerase Reads:
-283829
-Average Number of Polymerase Reads:
-14938
-Histogram of Average Number of Polymerase Reads Found Saved to png file
+Bar Chart of Polymerase Reads Saved to png file
 
 Min Barcode Quality Score:
 0
@@ -91,6 +89,7 @@ Max Barcode Quality Score:
 91
 Average Barcode Quality Score:
 81
+
 +--------------+---------------+------------------+-----------------+
 |   Barcode    |  Sample_Name  | Polymerase_Reads | Avg_Read_Length |
 +--------------+---------------+------------------+-----------------+
@@ -114,6 +113,7 @@ Average Barcode Quality Score:
 | lbc93--lbc93 | nasal_BIT_130 |       7963       |      14938      |
 | Not Barcoded |    No Name    |      23821       |      14938      |
 +--------------+---------------+------------------+-----------------+
+
 SMRT CELL: 2_B01
 
 List of Input Barcodes:
@@ -158,11 +158,7 @@ Not Barcoded
 List of Expected Barcodes Not Found:
 **All Expected Barcodes Found**
 
-Total Number of Polymerase Reads:
-291941
-Average Number of Polymerase Reads:
-16218
-Histogram of Average Number of Polymerase Reads Found Saved to png file
+Bar Chart of Polymerase Reads Saved to png file
 
 Min Barcode Quality Score:
 0
@@ -170,6 +166,7 @@ Max Barcode Quality Score:
 91
 Average Barcode Quality Score:
 82
+
 +--------------+---------------+------------------+-----------------+
 |   Barcode    |  Sample_Name  | Polymerase_Reads | Avg_Read_Length |
 +--------------+---------------+------------------+-----------------+
@@ -192,3 +189,18 @@ Average Barcode Quality Score:
 |  lbc8--lbc8  |   nasal_1403  |      18792       |      16218      |
 | Not Barcoded |    No Name    |      17772       |      16218      |
 +--------------+---------------+------------------+-----------------+
+
+
+Productivity Values 1_A01:
++--------+--------+--------+
+|   P₀   |   P₁   |   P₂   |
++--------+--------+--------+
+| 165079 | 604454 | 248813 |
++--------+--------+--------+
+
+Productivity Values 2_B01:
++--------+--------+--------+
+|   P₀   |   P₁   |   P₂   |
++--------+--------+--------+
+| 408370 | 417297 | 192679 |
++--------+--------+--------+
