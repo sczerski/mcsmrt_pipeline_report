@@ -15,7 +15,7 @@ import exml.etree.ElementTree as et
 import json
 import xmltodict
 
-### Please ignore these comments (these were system specific workarounds, but leaving here in case any errors arise)
+### Please ignore these comments (these were system specific bugs, but leaving here in case any errors arise and it's helpful)
 
 # Add my modules dir to the system path so python finds it
 # I don't like this, but I don't have permissions to download these modules where pythonpath is set to search for modules within the cluster
@@ -42,17 +42,17 @@ import xmltodict
 Author: Sam Czerski
 Generation of Report following Microbiome Analysis Pipeline (CCS & DEMUX)
 Must be run from the run_id subdirectory in the SCRATCH drive with conventionally named subfolders (eg. 1_A01, 2_B01, 3_C01/ccs/outputs/, 4_D01/demux_no_peek/outputs/)
-Last updated: 11/12/2021
+Last updated: 11/18/2021
 '''
 
 def check_smrt_cells_and_ccs_files():
     print("Confirming Existence of CCS Files...")
 
-    # List of possible smrt cell directories to search for
+    #Creating list of possible smrt cell directories to search for
     smrt_cells = ["1_A01", "2_B01", "3_C01", "4_D01"]
     smrt_cells_in_working_dir = []
 
-    # What smrt cells are present and add them to a new list to work from
+    #First, see what smrt cells are present and add them to a new list to work from
     for cell in smrt_cells:
         is_dir_here = os.path.exists("%s" % cell)
         if is_dir_here == True:
@@ -61,24 +61,24 @@ def check_smrt_cells_and_ccs_files():
         else:
             print("%s not found" % cell)
 
-    # Now have a list of the smrt cells within the working directory.
-    # Confirm the existence of files with the CCS data we are interested in.
+    #Now, we have a list of the smrt cells within the working directory.
+    #Next, we will confirm the existence of files with the CCS data we are interested in.
 
     for present_cell in smrt_cells_in_working_dir:
         os.chdir(f'{present_cell}/ccs/outputs/')
 
-    # if ccs.report.zip must be unzipped, try unzipping it.
+    #if ccs.report.zip must be unzipped, try unzipping it.
         try:
             with zipfile.ZipFile("ccs.report.csv.zip") as z:
                 z.extractall()
                 print("\nExtracted Output CCS Statistics File Successfully.")
-        # if ccs.report.csv.zip is already unzipped, try to open ccs_statistics.csv file (unzipped from report.csv.zip)
+        #if ccs.report.csv.zip is already unzipped, try to open ccs_statistics.csv file (unzipped from report.csv.zip)
         except:
             try:
                 with open("ccs_statistics.csv"):
                     print("Located CCS Summary Output File Successfully.")
             except:
-                # if this file is not found, stop.
+                #if this file is not found, stop.
                 raise FileNotFoundError("ccs.report.csv.zip not found.")
 
         finally:
@@ -101,7 +101,7 @@ def check_smrt_cells_and_ccs_files():
 def get_ccs_summary(smrt_cells):
 
     # create new output statistics report file
-    with open("ccs_demux_summary_report.txt", "w") as fout:
+    with open("ccs_demux_summary_report.txt", "a") as fout:
         # write date and time to the top of the output file
         now = datetime.now()
         # reformat
@@ -109,13 +109,11 @@ def get_ccs_summary(smrt_cells):
         fout.write(str("Date and Time: "))
         fout.write(str(dt_string))
         fout.write(str("\n"))
-	
         # Begin Report - write title
         fout.write(str('\nCCS Sub-Report\n'))
         # report stats for all cells
         for cell in smrt_cells:
             fout.write(str(f'\nSMRT CELL: {cell}\n'))
-	
             # initializing variables
             read_length = []
             count = 0
@@ -124,7 +122,6 @@ def get_ccs_summary(smrt_cells):
 
             # change into directory with existing CCS files
             os.chdir(f'{cell}/ccs/outputs/')
-		
             # obtain/generate summary data and statistics
             with open("ccs_statistics.csv") as f:
                 # skip the header line
@@ -139,18 +136,31 @@ def get_ccs_summary(smrt_cells):
                 for num in read_length:
                     read_sum += num
 
+                # Make a list to be returneded with totals for both cells
+                total_ccs_counts_both_cells = []
+                total_ccs_counts_both_cells.append(count)
+
                 # Summary Statistics
+
+                #fout.write("Total number of reads:\n")
+                #fout.write(str(count))
+                #fout.write("\nMin. Read Length:\n")
                 min_read_length = min(read_length)
+                #fout.write(str(min_read_length))
                 max_read_length = max(read_length)
+                #fout.write("\nMax. Read Length:\n")
+                #fout.write(str(max_read_length))
                 avg_read_length = round(read_sum / count)
                 
+                #fout.write("\nAverage Read Length:\n")
+                #fout.write(str(round(avg_read_length)))
                 fout.write("\nHistogram of Average Read Length Saved to png file\n")
-                plt.hist(read_length)
-                plt.xlim([0,6000])
-                X_ticks = np.arange(0,6000,500)
+                plt.hist(np.log(read_length))
+                plt.xlim([np.log(min_read_length),np.log(max_read_length)])
+                X_ticks = np.arange(np.log(min_read_length),np.log(max_read_length))
                 plt.xticks(X_ticks)
-                plt.title("Reads Lengths")
-                plt.xlabel("Lengths of Reads")
+                plt.title(f'{cell}: Post-CCS Log-Scaled Read Length')
+                plt.xlabel("Log-Scaled Lengths of Reads")
                 plt.ylabel("Frequency")
                 plt.savefig(f'{cell}_avg_read_length_hist.png')
                 plt.clf()
@@ -159,7 +169,6 @@ def get_ccs_summary(smrt_cells):
                 summary_stats_headers = ["Avg. Read Length", "Min. Read Length", "Max. Read Length", "Total Num. of Reads"]
                 summary_stats_table = PrettyTable(summary_stats_headers)
                 summary_stats_table.add_row([avg_read_length, min_read_length, max_read_length, count])
-		
                 # Write table to output file
                 fout.write(str(summary_stats_table))
 
@@ -185,11 +194,11 @@ def get_ccs_summary(smrt_cells):
 
                 # Summary Statistics
 
+                #fout.write("\nAverage Number of CCS Passes:\n")
                 avg_num_ccs_passes = round(passes_sum / pcount)
                 min_num_ccs_passes = min(num_passes)
                 max_num_ccs_passes = max(num_passes)
-		
-		# Plot
+                #fout.write(str(round(avg_num_ccs_passes)))
                 fout.write("\nHistogram of CCS Passes Saved to png file\n")
                 plt.hist(num_passes)
                 plt.xlim([0,100])
@@ -197,7 +206,7 @@ def get_ccs_summary(smrt_cells):
                 plt.xticks(X_ticks)
                 plt.xlabel("Number of CCS Passes")
                 plt.ylabel("Frequency")
-                plt.title("CCS Passes")
+                plt.title(f'{cell}: CCS Passes')
                 plt.savefig(f'{cell}_ccs_passes_hist.png')
                 plt.clf()
 
@@ -210,13 +219,16 @@ def get_ccs_summary(smrt_cells):
                 fout.write(str(passes_table))
                 fout.write(str('\n'))
 
-            # Return to beginning directory
+                # Return to beginning directory
 
             os.chdir("..")
             os.chdir("..")
             os.chdir("..")
-		
+            
 #again, i dont really like this, but look later for a better/more secure way. this could easily get messed up if the file convention is wrong. I could save a pwd command in a variable to get the run directory and use that.... I should do that.
+            
+            # Lastly, return the total number of post-ccs reads (count) to compare with polymerase reads
+            return total_ccs_counts_both_cells
 
     print("\nCCS Sub-Report Complete.\n")
 
@@ -246,7 +258,7 @@ def check_demux_files(smrt_cells):
             except:
                 raise FileNotFoundError("DEMUX Summary File Not Found.")
 
-def get_demux_summary(smrt_cells):
+def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
     #Reminder: Now we are back in the run_id directory with smrt cells as subdirectories in this folder.
     
     # Adding to the summary report file created above
@@ -329,9 +341,14 @@ def get_demux_summary(smrt_cells):
                     total_pr += int(num)
                     count += 1
 
+                #fout.write("\nTotal Number of Polymerase Reads:\n")
+                #fout.write(str(total_pr))
+
                 # compute average
                 polymerase_reads_avg = int(total_pr / count)
-                # compute min and max
+                #fout.write("\nAverage Number of Polymerase Reads:\n") #Confirm: Number or Length??
+                #fout.write(str(round(polymerase_reads_avg)))
+                # compute min and max for axes
                 max_polymerase_reads = max(polymerase_reads)
                 min_polymerase_reads = min(polymerase_reads)
 
@@ -343,7 +360,7 @@ def get_demux_summary(smrt_cells):
                 plt.xticks(np.arange(len(demultiplexed_barcodes)), demultiplexed_barcodes, rotation=90)
                 plt.xlabel("Barcodes")
                 plt.ylabel("Polymerase Reads")
-                plt.title("Bar Chart of Polymerase Reads")
+                plt.title(f'{cell}: Bar Chart of Polymerase Reads')
                 plt.tight_layout()
                 plt.savefig(f'{cell}_polymerase_reads_bar_chart.png')
                 plt.clf()
@@ -421,6 +438,19 @@ def get_demux_summary(smrt_cells):
                     # Print this as well so you can get a quick understanding
                     #print(str(demux_table))
 
+                    # Report the average difference in ccs reads to polymerase reads
+                    if cell == "1_A01":
+                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[0] - total_pr) / total_pr ) * 100 )
+                        fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                    elif cell == "2_B01":
+                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[1] - total_pr) / total_pr ) * 100 )
+                        fout.write(str(f'\nOn average, the difference in CSS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                    elif cell == "3_C01":
+                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[2] - total_pr) / total_pr ) * 100 )
+                        fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                    elif cell == "4_D01":
+                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[3] - total_pr) / total_pr ) * 100 )
+                        fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
                     
                 # Return to original run directory for accessing other cells
                 os.chdir("..")
@@ -470,20 +500,15 @@ def get_productivity_values(smrt_cells):
     for cell in smrt_cells:
         # use pwd to obtain the run id, which should be the directory above our current directory
         run_dir = subprocess.run(["pwd"], stdout=subprocess.PIPE) .stdout.decode('utf-8')
-	
         # because run_ids have the same length and there is a naming convention, I can use str splicing to take the last X characters to make up the run ID.
         run_id = run_dir[-23:]
         run_id = run_id.rstrip()
-	
         # now I need to get tge path to the sts.xml file associated with the run post sequencing
         pacbio_sequel_data_dir = "/data/pacbio/sequel/userdata/data_root/"
-	
         # full path to file str cat
         data_dir = pacbio_sequel_data_dir + run_id + "/" + cell
-	
-        # create a softlink to the file so we can easily get back to the current
+        # let's create a softlink to the file so we can easily get back to the current
         os.system(f'ln -s {data_dir}/*.sts.xml')
-	
         # assign file to variable - glob outputs list
         target_file = glob.glob('*.sts.xml')
         
@@ -491,7 +516,6 @@ def get_productivity_values(smrt_cells):
 
         # Convert XML to json file
         json_file = convert_xml_to_json(target_file[0])
-	
         # Extract Data
         with open(json_file) as j_file:
             data = json.load(j_file)
@@ -518,7 +542,6 @@ def get_productivity_values(smrt_cells):
                 
                 # remove the soft link of the .sts.xml file so we can repeat with next cell(s)
                 os.system(f'rm *.sts.xml')
-		
         # rename file for clarity
         os.rename('data.json', f'{cell}_data.json')
                     
@@ -548,12 +571,12 @@ def main():
     print("Generating CCS Report Summary...\n")
     smrt_cells = check_smrt_cells_and_ccs_files()
     #Third, Make CSS Sub-Report
-    get_ccs_summary(smrt_cells)
+    total_post_ccs_reads = get_ccs_summary(smrt_cells)
     #Fourth, Make Sure DEMUX Files Exist
     print("Generating DEMUX Report Summary...\n")
     check_demux_files(smrt_cells)
     #Fifth, Make DEMUX Sub-Report
-    get_demux_summary(smrt_cells)
+    get_demux_summary(smrt_cells, total_post_ccs_reads)
     #Sixth, obtain productivity values 
     get_productivity_values(smrt_cells)
     #Seventh, consolidate files to output dir
