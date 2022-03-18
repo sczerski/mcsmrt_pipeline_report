@@ -42,8 +42,9 @@ import xmltodict
 Author: Sam Czerski
 Generation of Report following Microbiome Analysis Pipeline (CCS & DEMUX)
 Must be run from the run_id subdirectory in the SCRATCH drive with conventionally named subfolders (eg. 1_A01, 2_B01, 3_C01/ccs/outputs/, 4_D01/demux_no_peek/outputs/)
-Last updated: 11/18/2021
+Last updated: 03/18/2022
 '''
+
 
 def check_smrt_cells_and_ccs_files():
     print("Confirming Existence of CCS Files...")
@@ -65,7 +66,7 @@ def check_smrt_cells_and_ccs_files():
     #Next, we will confirm the existence of files with the CCS data we are interested in.
 
     for present_cell in smrt_cells_in_working_dir:
-        os.chdir(f'{present_cell}/ccs/outputs/')
+        os.chdir(f'{present_cell}/ccs/outputs')
 
     #if ccs.report.zip must be unzipped, try unzipping it.
         try:
@@ -75,22 +76,22 @@ def check_smrt_cells_and_ccs_files():
         #if ccs.report.csv.zip is already unzipped, try to open ccs_statistics.csv file (unzipped from report.csv.zip)
         except:
             try:
-                with open("ccs_statistics.csv"):
+                with open("ccs.report.csv"):
                     print("Located CCS Summary Output File Successfully.")
             except:
                 #if this file is not found, stop.
                 raise FileNotFoundError("ccs.report.csv.zip not found.")
 
         finally:
-            try:
-                is_passes_tsv_here = os.path.exists("ccs_passes.tsv")
-                if is_passes_tsv_here == True:
-                    print("ccs_passes.tsv File Found.\n")
-                    print("All %s CCS Files Found.\n" % present_cell)
-                    os.chdir("..")
-                    os.chdir("..")
-                    os.chdir("..")
-            except:
+            is_passes_tsv_here = os.path.exists("ccs_passes.tsv")
+            if is_passes_tsv_here == True:
+                print("ccs_passes.tsv File Found.\n")
+                print("All %s CCS Files Found.\n" % present_cell)
+                os.chdir("..")
+                os.chdir("..")
+                os.chdir("..")
+                
+            else:
                 raise FileNotFoundError("ccs_passes.tsv not found.")
 
           # better way to do this...? seems a little risky, but should be fine as long as files are named conventionally
@@ -111,6 +112,12 @@ def get_ccs_summary(smrt_cells):
         fout.write(str("\n"))
         # Begin Report - write title
         fout.write(str('\nCCS Sub-Report\n'))
+
+        #initialize list for comparing read counts with polymerase reads
+        total_ccs_counts_all_cells = []
+        #initialize variable for keeping track of num of iterations to keep list accurate
+        iteration = 0
+        
         # report stats for all cells
         for cell in smrt_cells:
             fout.write(str(f'\nSMRT CELL: {cell}\n'))
@@ -119,11 +126,13 @@ def get_ccs_summary(smrt_cells):
             count = 0
             read_sum = 0
             pattern = re.compile(r',(\d+),')
+        
 
             # change into directory with existing CCS files
             os.chdir(f'{cell}/ccs/outputs/')
+    
             # obtain/generate summary data and statistics
-            with open("ccs_statistics.csv") as f:
+            with open("ccs.report.csv") as f:
                 # skip the header line
                 next(f)
 
@@ -136,9 +145,28 @@ def get_ccs_summary(smrt_cells):
                 for num in read_length:
                     read_sum += num
 
-                # Make a list to be returneded with totals for both cells
-                total_ccs_counts_both_cells = []
-                total_ccs_counts_both_cells.append(count)
+                # Append count to list  returneded with totals for all cells
+                if iteration == 0 and cell == "2_B01":
+                    total_ccs_counts_all_cells.append(0)
+                    total_ccs_counts_all_cells.append(count)
+                    iteration += 1
+
+                elif iteration == 0 and cell == "3_C01":
+                    total_ccs_counts_all_cells.append(0)
+                    total_ccs_counts_all_cells.append(0)
+                    total_ccs_counts_all_cells.append(count)
+                    iteration += 1
+
+                elif iteration == 0 and cell == "4_D01":
+                    total_ccs_counts_all_cells.append(0)
+                    total_ccs_counts_all_cells.append(0)
+                    total_ccs_counts_all_cells.append(0)
+                    total_ccs_counts_all_cells.append(count)
+                    iteration += 1
+
+                else:
+                    total_ccs_counts_all_cells.append(count)
+
 
                 # Summary Statistics
 
@@ -228,7 +256,7 @@ def get_ccs_summary(smrt_cells):
 #again, i dont really like this, but look later for a better/more secure way. this could easily get messed up if the file convention is wrong. I could save a pwd command in a variable to get the run directory and use that.... I should do that.
             
             # Lastly, return the total number of post-ccs reads (count) to compare with polymerase reads
-            return total_ccs_counts_both_cells
+        return total_ccs_counts_all_cells
 
     print("\nCCS Sub-Report Complete.\n")
 
@@ -292,7 +320,7 @@ def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
                 # skip header line
                 next(f)
                 # get list of demultiplexed barcodes and write to output file.
-                demultiplexed_barcodes = [line.split(",")[2] for line in f]
+                demultiplexed_barcodes = [line.split(",")[1] for line in f]
                 fout.write("\nList of Demultiplexed Barcodes:\n")
                 # record the number of barcodes demultiplexed for table entries
                 num_of_barcodes = 0
@@ -346,6 +374,14 @@ def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
 
                 # compute average
                 polymerase_reads_avg = int(total_pr / count)
+
+
+                # while I'm here, I'm also going to compute the average for the ccs reads
+                ccs_reads_avg = []
+                for i in total_post_ccs_reads_list:
+                    reads_avg = int(i / count)
+                    ccs_reads_avg.append(reads_avg)
+                    
                 #fout.write("\nAverage Number of Polymerase Reads:\n") #Confirm: Number or Length??
                 #fout.write(str(round(polymerase_reads_avg)))
                 # compute min and max for axes
@@ -378,7 +414,7 @@ def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
                 for line in f:
                     bqs_lines.append(line)
                 for line in bqs_lines:
-                    barcode_quality_scores.append(line.split(",")[5])
+                    barcode_quality_scores.append(line.split(",")[4])
 
                 # Remove header (First element)
                 barcode_quality_scores.pop(0)
@@ -409,7 +445,7 @@ def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
                     all_lines = []
                     sample_names = []
                     demux_data = []
-                    table_headers = ["Barcode", "Sample_Name", "Polymerase_Reads", "Avg_Read_Length"]
+                    table_headers = ["Barcode", "Sample_Name", "Polymerase_Reads"] #,"Avg_Read_Length"]
 
                     # Get sample names from lines in file
                     for line in f:
@@ -423,7 +459,7 @@ def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
                     # for each barcode/sample, use list nesting to group associated data
                     # floats cannot be accessed by indexing, so make those values ints
                     for i in range(0, num_of_barcodes):
-                        demux_data.append([demultiplexed_barcodes[i], sample_names[i], polymerase_reads[i], polymerase_reads_avg])
+                        demux_data.append([demultiplexed_barcodes[i], sample_names[i], polymerase_reads[i]]) #, polymerase_reads_avg])
                         
                     # initiate table with headers
                     demux_table = PrettyTable(table_headers)
@@ -439,18 +475,39 @@ def get_demux_summary(smrt_cells, total_post_ccs_reads_list):
                     #print(str(demux_table))
 
                     # Report the average difference in ccs reads to polymerase reads
+                    #print(total_post_ccs_reads_list)
+                    
                     if cell == "1_A01":
-                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[0] - total_pr) / total_pr ) * 100 )
-                        fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                        if ccs_reads_avg[0] < polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_increase = round( ( (polymerase_reads_avg - ccs_reads_avg[0]) / ccs_reads_avg[0] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_increase}%.\n'))
+                        elif ccs_reads_avg[0] > polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_decrease = round( ( (ccs_reads_avg[0] - polymerase_reads_avg) / ccs_reads_avg[0] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_decrease}%.\n'))
+                            
                     elif cell == "2_B01":
-                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[1] - total_pr) / total_pr ) * 100 )
-                        fout.write(str(f'\nOn average, the difference in CSS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                        if ccs_reads_avg[1] < polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_increase = round( ( (polymerase_reads_avg - ccs_reads_avg[1]) / ccs_reads_avg[1] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CSS reads to Polymerase reads is {avg_ccs_polymerase_perc_increase}%.\n'))
+                        elif ccs_reads_avg[1] > polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_decrease = round( ( (ccs_reads_avg[1] - polymerase_reads_avg) / ccs_reads_avg[1] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_decrease}%.\n'))
+                            
                     elif cell == "3_C01":
-                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[2] - total_pr) / total_pr ) * 100 )
-                        fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                        if ccs_reads_avg[2] < polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_increase = round( ( (polymerase_reads_avg - ccs_reads_avg[2]) / ccs_reads_avg[2] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_increase}%.\n'))
+                        elif ccs_reads_avg[2] > polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_decrease = round( ( (ccs_reads_avg[2] - polymerase_reads_avg) / ccs_reads_avg[2] ) * 100 )
+                            fout.write(str(f'\On average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_decrease}%.\n'))
+                            
                     elif cell == "4_D01":
-                        avg_ccs_polymerase_read_diff = round( ( (total_post_ccs_reads_list[3] - total_pr) / total_pr ) * 100 )
-                        fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads was {avg_ccs_polymerase_read_diff}%.\n'))
+                        if ccs_reads_avg[3] < polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_increase = round( ( (polymerase_reads_avg - ccs_reads_avg[3]) / ccs_reads_avg[3] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_increase}%.\n'))
+                        elif ccs_reads_avg[3] > polymerase_reads_avg:
+                            avg_ccs_polymerase_perc_decrease = round( ( (ccs_reads_avg[3] - polymerase_reads_avg) / ccs_reads_avg[3] ) * 100 )
+                            fout.write(str(f'\nOn average, the difference in CCS reads to Polymerase reads is {avg_ccs_polymerase_perc_decrease}%.\n')) 
                     
                 # Return to original run directory for accessing other cells
                 os.chdir("..")
@@ -587,3 +644,4 @@ def main():
 
 if __name__=="__main__":
 	main()
+
